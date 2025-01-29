@@ -30,8 +30,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(livox_ros_driver2 REQUIRED)
-# find_package(rosbag2_cpp REQUIRED)
-# find_package(rclcpp_serialization REQUIRED)
+find_package(rosbag2_cpp REQUIRED)
 
 set(dependencies
     rclcpp
@@ -42,6 +41,7 @@ set(dependencies
     pcl_ros
     pcl_conversions
     livox_ros_driver2
+    rosbag2_cpp
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -99,18 +99,18 @@ target_link_libraries(run_mapping_online
 )
 ament_target_dependencies(run_mapping_online ${dependencies})
 
-# add_executable(run_mapping_offline app/run_mapping_offline.cc)
-# target_link_libraries(run_mapping_offline
-#         laser_mapping
-#         gflags
-#         rosbag2_cpp::rosbag2_cpp
-#         )
-# ament_target_dependencies(run_mapping_offline ${dependencies})
+add_executable(run_mapping_offline app/run_mapping_offline.cc)
+target_link_libraries(run_mapping_offline
+        laser_mapping
+        gflags
+        rosbag2_cpp::rosbag2_cpp
+        )
+ament_target_dependencies(run_mapping_offline ${dependencies})
 
-# install(
-#     TARGETS laser_mapping run_mapping_online run_mapping_online
-#     DESTINATION lib/${PROJECT_NAME}
-# )
+install(
+    TARGETS laser_mapping run_mapping_online run_mapping_offline
+    DESTINATION lib/${PROJECT_NAME}
+)
 
 install(
     TARGETS laser_mapping run_mapping_online
