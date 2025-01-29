@@ -3,8 +3,8 @@
 //
 
 #include <gflags/gflags.h>
-#include <rosbag/bag.h>
-#include <rosbag/view.h>
+#include <rosbag2_cpp/readers/sequential_reader.hpp>
+#include <rosbag2_cpp/typesupport_helpers.hpp>
 #include <unistd.h>
 #include <csignal>
 
@@ -20,7 +20,7 @@ DEFINE_string(traj_log_file, "./Log/traj.txt", "path to traj log file");
 
 void SigHandle(int sig) {
     faster_lio::options::FLAG_EXIT = true;
-    ROS_WARN("catch sig %d", sig);
+    RCLCPP_WARN("catch sig %d", sig);
 }
 
 int main(int argc, char **argv) {
@@ -29,6 +29,8 @@ int main(int argc, char **argv) {
     FLAGS_stderrthreshold = google::INFO;
     FLAGS_colorlogtostderr = true;
     google::InitGoogleLogging(argv[0]);
+
+    rclcpp::init(argc, argv);
 
     const std::string bag_file = FLAGS_bag_file;
     const std::string config_file = FLAGS_config_file;
@@ -44,7 +46,16 @@ int main(int argc, char **argv) {
 
     // just read the bag and send the data
     LOG(INFO) << "Opening rosbag, be patient";
-    rosbag::Bag bag(FLAGS_bag_file, rosbag::bagmode::Read);
+    rosbag2_cpp::StorageOptions storage_options;
+    storage_options.uri = FLAGS_bag_file;
+    storage_options.storage_id = "sqlite3";
+
+    rosbag2_cpp::ConverterOptions converter_options;
+    converter_options.input_serialization_format = "cdr";
+    converter_options.output_serialization_format = "cdr";
+
+    rosbag2_cpp::readers::SequentialReader reader;
+    reader.open(storage_options, converter_options);
 
     LOG(INFO) << "Go!";
     for (const rosbag::MessageInstance &m : rosbag::View(bag)) {
